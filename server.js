@@ -5,7 +5,7 @@ const bcrypt  = require('bcrypt-nodejs');
 const cors =  require('cors');
 
 const knex = require('knex');
-const { json } = require('body-parser');
+
 
 const db  = knex({
     client: 'pg',
@@ -93,17 +93,15 @@ app.post('/register', (req, res) => {
 
 app.get('/profile/:id', (req, res) => {
     const {id} = req.params;
-    let found = false;
-    database.users.forEach(user => {
-        // console.log(user)
-        if(user.id === id) { 
-            found = true;
-            return res.json(user)
-        }
-    })
-    if(!found) {
-        res.status(404).json("user not found")
-    }
+   db.select("*").from("users").where({id}).then(users => {
+       if(users.length) {
+           res.json(users[0])
+       }
+       else {
+           res.status(400).json("user not found")
+       }
+   })
+   .catch(error => res.status(400).json("error getting user"))
 })
 app.post('/image', (req, res) => {
     console.log("image req body:: ",req.body)
