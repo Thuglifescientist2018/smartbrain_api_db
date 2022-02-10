@@ -5,6 +5,7 @@ const bcrypt  = require('bcrypt-nodejs');
 const cors =  require('cors');
 
 const knex = require('knex');
+const { json } = require('body-parser');
 
 
 const db  = knex({
@@ -19,33 +20,7 @@ const db  = knex({
   });
 
 
-const database = {
-    users: [
-        {
-            id: '123', 
-            name: 'John',
-            email: 'john@gmail.com',
-            password: 'cookies',
-            entries: 0,
-            joined: new Date()
-        },
-        {
-            id: '124', 
-            name: 'Sally',
-            email: 'sally@gmail.com',
-            password: 'bananas',
-            entries: 0,
-            joined: new Date()
-        },
-    ],
-    login: [
-        {
-            id: '987',
-            hash: '',
-            email: 'john@gmail.com'
-        }
-    ]
-}
+
 const app = express()
 app.use(function(req, res, next) {
     req.headers['content-type'] = "application/json";
@@ -57,19 +32,22 @@ app.get('/', (req, res) => {
     res.send(database.users)
 })
 app.post("/signin", (req, res) => {
-    bcrypt.compare("22apples", '$2a$10$VBTSjPSUajbfvK5C.eI2iOZvCHf80ur5NONu0/CEF/s4cpm/dmnYe', function(err, res) {
-        // console.log('comparison1: ', res)
-    });
-    bcrypt.compare("22apples", '$2a$10$VBTSjPSUajbfvK5C.eI2iOZvCHf80ur5NONu0/CEF/s4cpm/dmnYe', function(err, res) {
-        // console.log("comparison2: ", res)
-    });
-    console.log("signin req.body: ", req.body)
-    if(req.body.email === database.users[0].email && 
-        req.body.password === database.users[0].password) {
-            res.json(database.users[0]);
-        }else {
-            res.status(400).json('error logging in')
-        }
+    db.select('email', 'hash').from('login')
+        .where('email', '=', req.body.email)
+        .then(data => {
+            const isValid = bcrypt.compareSync(req.body.password, data[0].hash);
+           if(isValid) {
+              return db.select("*").from('users')
+               .where("email", '=', req.body.email)
+               .then(user => {
+                   res.json(user[0])
+               })
+               .catch(err => res.status(400).json("unable to get the user   "))
+           }
+           else {
+               res.status(400).json("wrong credentials")
+           }
+        }).catch(error => res.status(400).json('wrong credentials'))
 })
 let id = 125;
 app.post('/register', (req, res) => {
