@@ -46,8 +46,9 @@ app.post('/imageurl', (req, res) => {image.handleApiCall(req, res)})
 // // Load hash from your password DB.
 
 // bcrypt end
-let port = 3000
-app.listen(port, () => {
-    console.log("server is running on port: ", port)
-})
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 3000;
+}
+app.listen(port);
 
