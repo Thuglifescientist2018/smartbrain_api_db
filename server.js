@@ -31,7 +31,7 @@ app.use(function(req, res, next) {
 });
 app.use(bodyParser.json())
 app.use(cors())
-app.get('/', (req, res) => {res.send(database.users)})
+app.get('/', (req, res) => {res.send("it is working!")})
 app.post("/signin", signin.handleSignIn(db, bcrypt)) // req and res automatically get injected (advanced stuff but this is how it works)
 
 app.post('/register', (req, res) => {register.handleRegister(req, res, db, bcrypt)})
